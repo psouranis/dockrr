@@ -1,6 +1,22 @@
-# Dock Folders
+<p align="center"><img src="logo.svg" alt="Dockrr: a ginger cat purring on a dock" width="160"></p>
 
-GNOME's app folders in [Dash to Dock](https://github.com/micheleg/dash-to-dock).
+# Dockrr
+
+More from [Dash to Dock](https://github.com/micheleg/dash-to-dock), for GNOME 48:
+
+- **Folders in the dock**: GNOME's own app folders, as dock icons that open a
+  pop-up grid of their apps, with unread badges, drag-to-move, and no
+  separate dock icons for the apps inside.
+- **The song playing now**: a card at the dock's end with the cover, the
+  title and artist, previous / play-pause / next and a progress line, tinted
+  by the cover.
+- **Your own app icons and window classes**: from an app's right-click menu
+  (Change Icon…) or a file kept in a repo (`launchers.json`), kept through
+  the apps' updates and renames.
+
+Formerly **Dock Folders** (`dock-folders@psouranis.github.io`): its settings and
+pictures move to Dockrr's folders the first time it starts (see
+[Coming from Dock Folders](#coming-from-dock-folders)).
 
 <table>
   <tr>
@@ -62,7 +78,7 @@ GNOME's app folders in [Dash to Dock](https://github.com/micheleg/dash-to-dock).
   dock never fetches one over the network. In a dock on the left or right,
   the buttons stack and the text is left out.
 - **Icons and window classes from a file**, for a setup kept in a repo:
-  `~/.config/dock-folders/launchers.json`, read live:
+  `~/.config/dockrr/launchers.json`, read live:
 
   ```json
   {"launchers": [
@@ -86,7 +102,7 @@ GNOME's app folders in [Dash to Dock](https://github.com/micheleg/dash-to-dock).
   it will go, between any two icons (apps or folders), as when you drag an
   app, and it goes there when you let go (Esc, or letting go off the dock,
   leaves it where it was). Or right-click it: Rename…, Move Left, Move Right, Remove from
-  Dock, Dock Folders Settings.
+  Dock, Dockrr Settings.
 - **Any folder**: the settings window (Extensions app, or right-click a dock
   folder) has a switch per app folder.
 
@@ -108,15 +124,32 @@ make install
 ```
 
 Then log in again (on X11, Alt+F2, `r`, Enter is enough) and turn it on in
-the Extensions app, or `gnome-extensions enable dock-folders@psouranis.github.io`.
+the Extensions app, or `gnome-extensions enable dockrr@psouranis.github.io`.
 
 ## Use
 
 1. Make a folder: right-click an app in the dock → Add to Folder → New
    Folder…. (Or in Show Apps: drop one app on another.)
-2. Put it in the dock: right-click a dock folder → Dock Folders Settings, or
-   the Extensions app → Dock Folders → settings, and switch it on.
+2. Put it in the dock: right-click a dock folder → Dockrr Settings, or
+   the Extensions app → Dockrr → settings, and switch it on.
 3. Drag it to where you want it.
 
 A folder's name and apps are always the app folder's own, read live: change
 the folder in Show Apps and the dock follows.
+
+## Coming from Dock Folders
+
+Dockrr is Dock Folders renamed (2026-11). The first time it starts it moves
+`~/.config/dock-folders` (your folders, `launchers.json`) to
+`~/.config/dockrr`, and `~/.local/share/dock-folders` (pictures from Change
+Icon…) to `~/.local/share/dockrr`, unless those already exist. Launcher
+copies Dock Folders made (`X-DockFolders-*` keys) are taken over as they are.
+Switch the old extension off and remove it:
+
+```sh
+gnome-extensions disable dock-folders@psouranis.github.io
+gnome-extensions uninstall dock-folders@psouranis.github.io
+make install && gnome-extensions enable dockrr@psouranis.github.io
+```
+
+Then log in again (on X11, Alt+F2 then `r`).

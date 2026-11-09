@@ -1,7 +1,7 @@
-// Dock Folders' own config, shared by the extension and its preferences
+// Dockrr's own config, shared by the extension and its preferences
 // window: which app-grid folders are in the dock, and where.
 //
-//   ~/.config/dock-folders/folders.json
+//   ~/.config/dockrr/folders.json
 //   {
 //     "folders": [{"id": "Chats", "position": 9}, {"id": "Work"}],
 //     "singleWindowApps": ["org.signal.Signal.desktop"]
@@ -54,7 +54,7 @@ export function folderName(settings) {
 }
 
 export const configFile = () => Gio.File.new_for_path(
-    GLib.build_filenamev([GLib.get_user_config_dir(), 'dock-folders', 'folders.json']));
+    GLib.build_filenamev([GLib.get_user_config_dir(), 'dockrr', 'folders.json']));
 
 function readFile() {
     try {
@@ -63,7 +63,7 @@ function readFile() {
         return data && typeof data === 'object' ? data : {};
     } catch (e) {
         if (!e.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
-            console.warn(`Dock Folders: ${configFile().get_path()}: ${e.message}`);
+            console.warn(`Dockrr: ${configFile().get_path()}: ${e.message}`);
         return {};
     }
 }
@@ -101,4 +101,22 @@ export function writeConfig(folders, singleWindowApps) {
         data.singleWindowApps = apps;
     file.replace_contents(new TextEncoder().encode(`${JSON.stringify(data, null, 4)}\n`),
         null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+}
+
+// Dockrr was Dock Folders until 2026-11: its config (~/.config/dock-folders)
+// and chosen pictures (~/.local/share/dock-folders) move to the new name the
+// first time it starts. Nothing is moved over a folder that already exists.
+export function moveOldData() {
+    for (const base of [GLib.get_user_config_dir(), GLib.get_user_data_dir()]) {
+        const old = Gio.File.new_for_path(GLib.build_filenamev([base, 'dock-folders']));
+        const now = Gio.File.new_for_path(GLib.build_filenamev([base, 'dockrr']));
+        if (!old.query_exists(null) || now.query_exists(null))
+            continue;
+        try {
+            old.move(now, Gio.FileCopyFlags.NONE, null, null);
+            console.log(`Dockrr: moved ${old.get_path()} to ${now.get_path()}`);
+        } catch (e) {
+            console.warn(`Dockrr: moving ${old.get_path()}: ${e.message}`);
+        }
+    }
 }

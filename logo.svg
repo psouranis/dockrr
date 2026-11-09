@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Dockrr: a cat purring on a dock</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d1f52"/>
+      <stop offset="1" stop-color="#121220"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8c07a"/>
+      <stop offset="1" stop-color="#ec9a4c"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- the app icon's tile -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bg)"/>
+
+  <!-- the dock -->
+  <g filter="url(#shadow)">
+    <rect x="64" y="322" width="384" height="100" rx="30" fill="#ffffff" fill-opacity="0.12"
+          stroke="#ffffff" stroke-opacity="0.22" stroke-width="2"/>
+  </g>
+  <!-- its icons: an app, a folder (2 x 2), two apps, a divider, now playing -->
+  <rect x="92" y="348" width="48" height="48" rx="13" fill="#a855f7"/>
+  <rect x="154" y="348" width="48" height="48" rx="13" fill="#ffffff" fill-opacity="0.22"/>
+  <rect x="162" y="356" width="14" height="14" rx="4" fill="#60a5fa"/>
+  <rect x="180" y="356" width="14" height="14" rx="4" fill="#f472b6"/>
+  <rect x="162" y="374" width="14" height="14" rx="4" fill="#34d399"/>
+  <rect x="180" y="374" width="14" height="14" rx="4" fill="#fbbf24"/>
+  <rect x="216" y="348" width="48" height="48" rx="13" fill="#f59e0b"/>
+  <rect x="278" y="348" width="48" height="48" rx="13" fill="#2dd4bf"/>
+  <rect x="342" y="352" width="3" height="40" rx="1.5" fill="#ffffff" fill-opacity="0.35"/>
+  <rect x="360" y="348" width="64" height="48" rx="13" fill="#ffffff" fill-opacity="0.16"/>
+  <path d="M384 382 V362 l14 -3 v18" fill="none" stroke="#ffffff" stroke-width="4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="380" cy="383" r="5" fill="#ffffff"/>
+  <circle cx="394" cy="378" r="5" fill="#ffffff"/>
+
+  <!-- purring: waves from the cat -->
+  <g fill="none" stroke="#c4b5fd" stroke-linecap="round" stroke-width="6">
+    <path d="M300 168 q14 18 0 36" stroke-opacity="0.9"/>
+    <path d="M320 152 q24 34 0 68" stroke-opacity="0.65"/>
+    <path d="M340 136 q34 50 0 100" stroke-opacity="0.4"/>
+  </g>
+
+  <!-- the cat, a loaf on the dock -->
+  <g>
+    <!-- tail, curled along the dock -->
+    <path d="M330 316 C 392 318, 410 286, 380 266" fill="none" stroke="#ec9a4c"
+          stroke-width="20" stroke-linecap="round"/>
+    <!-- body -->
+    <path d="M150 324 C 150 262, 190 236, 244 236 C 300 236, 346 262, 346 324 Z" fill="url(#fur)"/>
+    <!-- stripes on the back -->
+    <g fill="none" stroke="#d4843a" stroke-width="7" stroke-linecap="round">
+      <path d="M262 246 q8 16 2 30"/>
+      <path d="M288 254 q8 16 2 30"/>
+      <path d="M312 268 q6 14 1 26"/>
+    </g>
+    <!-- front paws -->
+    <ellipse cx="190" cy="322" rx="22" ry="11" fill="#f8c07a"/>
+    <ellipse cx="236" cy="323" rx="22" ry="11" fill="#f8c07a"/>
+    <!-- ears -->
+    <path d="M150 196 L156 136 L196 172 Z" fill="#ec9a4c"/>
+    <path d="M232 172 L272 136 L278 196 Z" fill="#ec9a4c"/>
+    <path d="M160 186 L163 152 L186 173 Z" fill="#f7a1a8"/>
+    <path d="M242 173 L265 152 L268 186 Z" fill="#f7a1a8"/>
+    <!-- head -->
+    <ellipse cx="214" cy="210" rx="70" ry="60" fill="#f8c07a"/>
+    <path d="M206 158 l4 16 M222 156 l-2 17" stroke="#d4843a" stroke-width="6" stroke-linecap="round"/>
+    <!-- eyes shut, content -->
+    <g fill="none" stroke="#3a2614" stroke-width="5.5" stroke-linecap="round">
+      <path d="M170 208 q12 11 24 0"/>
+      <path d="M234 208 q12 11 24 0"/>
+    </g>
+    <!-- nose and mouth -->
+    <path d="M207 226 h14 l-7 8 Z" fill="#e2728a"/>
+    <path d="M214 234 q-6 10 -15 6 M214 234 q6 10 15 6" fill="none" stroke="#3a2614"
+          stroke-width="4" stroke-linecap="round"/>
+    <!-- whiskers -->
+    <g stroke="#ffffff" stroke-opacity="0.85" stroke-width="3" stroke-linecap="round">
+      <path d="M166 230 l-38 -6 M166 240 l-36 6"/>
+      <path d="M262 230 l38 -6 M262 240 l36 6"/>
+    </g>
+    <!-- blush -->
+    <ellipse cx="170" cy="230" rx="11" ry="6" fill="#f7a1a8" fill-opacity="0.6"/>
+    <ellipse cx="258" cy="230" rx="11" ry="6" fill="#f7a1a8" fill-opacity="0.6"/>
+  </g>
+</svg>

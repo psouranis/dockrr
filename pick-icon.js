@@ -15,7 +15,7 @@ for (const type of ['image/png', 'image/svg+xml', 'image/jpeg', 'image/webp', 'i
 const filters = new Gio.ListStore({item_type: Gtk.FileFilter});
 filters.append(filter);
 
-const app = new Gtk.Application({application_id: 'io.github.psouranis.DockFolders.PickIcon',
+const app = new Gtk.Application({application_id: 'io.github.psouranis.Dockrr.PickIcon',
     flags: Gio.ApplicationFlags.NON_UNIQUE});
 app.connect('activate', () => {
     app.hold();

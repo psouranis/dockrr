@@ -14,16 +14,18 @@ function check(name, got, want) {
     print(`FAIL ${name}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
 }
 
-const root = GLib.dir_make_tmp('dock-folders-test-XXXXXX');
+const root = GLib.dir_make_tmp('dockrr-test-XXXXXX');
 const dir = (...p) => GLib.build_filenamev([root, ...p]);
 const sys = dir('system', 'applications');
 const user = dir('user', 'applications');
-const pics = dir('user', 'dock-folders', 'icons');
+const pics = dir('user', 'dockrr', 'icons');
+const oldPics = dir('user', 'dock-folders', 'icons');
 for (const d of [sys, user, pics])
     GLib.mkdir_with_parents(d, 0o755);
 let favorites = [];
 paths.userApps = () => user;
 paths.iconDir = () => pics;
+paths.oldIconDir = () => oldPics;
 paths.launchers = () => dir('launchers.json');
 paths.systemApps = () => [sys];
 paths.favorites = () => ({
@@ -102,7 +104,7 @@ check('and again after the browser rewrote it', key(read(`${user}/webapp.desktop
 launchers([]);
 reconcile();
 check('undeclared: its own icon is back', key(read(`${user}/webapp.desktop`), 'Icon'), 'webapp');
-check('and our key is gone', key(read(`${user}/webapp.desktop`), 'X-DockFolders-OriginalIcon'), null);
+check('and our key is gone', key(read(`${user}/webapp.desktop`), 'X-Dockrr-OriginalIcon'), null);
 
 // Change Icon… wins over the declared icon; Reset Icon goes back to it.
 write(`${sys}/term.desktop`, entry('Term'));
@@ -133,6 +135,20 @@ setAppIcon(app('viewer'), picture);
 GLib.unlink(`${sys}/viewer.desktop`);
 reconcile();
 check('uninstalled: its copy is gone', read(`${user}/viewer.desktop`), null);
+
+// A copy Dock Folders made (its old keys, its old picture folder): taken over.
+write(`${sys}/legacy.desktop`, entry('Legacy'));
+write(`${user}/legacy.desktop`, entry('Legacy').replace('[Desktop Entry]',
+    `[Desktop Entry]\nX-DockFolders-Override=true\nX-DockFolders-Source=${sys}/legacy.desktop\nX-DockFolders-Icon=${oldPics}/legacy-1.png`)
+    .replace('Icon=legacy', `Icon=${oldPics}/legacy-1.png`));
+launchers([]);
+reconcile();
+const legacy = read(`${user}/legacy.desktop`);
+check('an old copy is kept (it has a picture of its own)', legacy !== null, true);
+check('its keys renamed', key(legacy, 'X-Dockrr-Icon'), `${pics}/legacy-1.png`);
+check('the old keys gone', key(legacy, 'X-DockFolders-Icon'), null);
+check('its picture path moved to the new folder', key(legacy, 'Icon'), `${pics}/legacy-1.png`);
+check('its source kept', key(legacy, 'X-Dockrr-Source'), `${sys}/legacy.desktop`);
 
 GLib.spawn_command_line_sync(`rm -rf ${root}`);
 if (failed) {

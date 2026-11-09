@@ -1,4 +1,4 @@
-// Dock Folders' settings: which app-grid folders are in the dock. Opened from
+// Dockrr's settings: which app-grid folders are in the dock. Opened from
 // the Extensions app, or from a dock folder's right-click menu. A switch per
 // app-grid folder; what it changes is config.js's file, which the extension
 // follows at once.
@@ -9,10 +9,11 @@ import Gio from 'gi://Gio';
 import {ExtensionPreferences, gettext as _} from
     'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import {folderName, folderSettings, readConfig, writeConfig} from './config.js';
+import {folderName, folderSettings, moveOldData, readConfig, writeConfig} from './config.js';
 
-export default class DockFoldersPreferences extends ExtensionPreferences {
+export default class DockrrPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
+        moveOldData();   // opened before the dock started: same config either way
         const page = new Adw.PreferencesPage({icon_name: 'folder-symbolic'});
         window.add(page);
 

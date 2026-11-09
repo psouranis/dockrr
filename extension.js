@@ -1,4 +1,4 @@
-// Dock Folders: GNOME's own app-grid folders in Dash to Dock.
+// Dockrr: GNOME's own app-grid folders in Dash to Dock.
 //
 //   - The dock icon is a rounded square of the folder's first four apps, with
 //     a red badge adding up the unread counts of all its apps, and Dash to
@@ -21,7 +21,7 @@
 //     dock's folders, or New Folder… makes one with it, where it was.
 //   - Right-click an app, in the dock or a folder's pop-up: Change Icon…
 //     gives it a picture of your own as its icon, Reset Icon takes it back;
-//     ~/.config/dock-folders/launchers.json can set icons and window classes
+//     ~/.config/dockrr/launchers.json can set icons and window classes
 //     too (for a setup kept in a repo). Kept through the apps' updates and
 //     renames (icons.js).
 //   - The song playing now, in a section of its own at the dock's end, after
@@ -77,7 +77,7 @@ import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js
 
 import {
     KNOWN_SINGLE_WINDOW_APPS, configFile, folderName, folderSettings, readConfig,
-    readSingleWindowApps, writeConfig,
+    moveOldData, readSingleWindowApps, writeConfig,
 } from './config.js';
 import {folderEntries, moveInRow, newFolderId, placeFolders, rawIndex} from './order.js';
 import {NowPlaying} from './nowplaying.js';
@@ -106,7 +106,7 @@ function folderApps(settings) {
 
 // A red count on the top right corner of an icon, as Dash to Dock's.
 function makeBadge() {
-    return new St.Label({style_class: 'notification-badge dock-folder-badge', visible: false});
+    return new St.Label({style_class: 'notification-badge dockrr-badge', visible: false});
 }
 
 // An icon of `size` px with `badge` on its top right corner. Placed by
@@ -202,7 +202,7 @@ function appFromDragSource(source) {
 // Asks for a folder's name in a GNOME Shell dialog, `text` filled in;
 // `done(name)` with the name typed (trimmed, not empty) when confirmed.
 function askName(title, text, confirm, done) {
-    const dialog = new ModalDialog.ModalDialog({styleClass: 'dock-folders-name-dialog'});
+    const dialog = new ModalDialog.ModalDialog({styleClass: 'dockrr-name-dialog'});
     const content = new Dialog.MessageDialogContent({title});
     const entry = new St.Entry({text, can_focus: true, x_expand: true});
     content.add_child(entry);
@@ -235,7 +235,7 @@ function makeIndicator(indicators, source) {
         indicator._indicators = parts.filter(i => !isBadge(i));
         return indicator;
     } catch (e) {
-        console.warn(`Dock Folders: running indicator: ${e.message}`);
+        console.warn(`Dockrr: running indicator: ${e.message}`);
         return null;
     }
 }
@@ -260,7 +260,7 @@ const FolderIcon = GObject.registerClass({
     },
 }, class FolderIcon extends St.Button {
     // createIcon(size) draws the picture; sized with baseIcon.setIconSize().
-    _init(createIcon, styleClass = 'dock-folder-button') {
+    _init(createIcon, styleClass = 'dockrr-folder-button') {
         super._init({
             style_class: `overview-tile ${styleClass}`,
             reactive: true,
@@ -314,8 +314,8 @@ class DockFolder {
         dash._hookUpLabel(this.item);
 
         const side = dash._position ?? St.Side.BOTTOM;
-        this._menu = this._makeMenu(side, 'dock-folder-menu');
-        this._actions = this._makeMenu(side, 'dock-folder-actions');
+        this._menu = this._makeMenu(side, 'dockrr-folder-menu');
+        this._actions = this._makeMenu(side, 'dockrr-folder-actions');
         this._fillActions();
         this._side = side;
 
@@ -387,7 +387,7 @@ class DockFolder {
         this._actions.addAction(_('Move Right'), () => this._ext.nudgeFolder(this.id, this.item, 1));
         this._actions.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._actions.addAction(_('Remove from Dock'), () => this._ext.removeFolder(this.id));
-        this._actions.addAction(_('Dock Folders Settings…'), () => this._ext.openPreferences());
+        this._actions.addAction(_('Dockrr Settings…'), () => this._ext.openPreferences());
     }
 
     // Dash to Dock's own running indicators (the folder's and the pop-up
@@ -452,7 +452,7 @@ class DockFolder {
         const pad = Math.max(2, Math.round(size * 0.1));
         const mini = Math.max(4, Math.floor((size - 3 * pad) / 2));
         const square = new St.BoxLayout({
-            style_class: 'dock-folder-icon',
+            style_class: 'dockrr-folder-icon',
             orientation: Clutter.Orientation.VERTICAL,
             style: `border-radius: ${Math.round(size * 0.24)}px; ` +
                 `padding: ${pad}px; spacing: ${pad}px;`,
@@ -526,11 +526,11 @@ class DockFolder {
         this._menu.removeAll();
         const box = new St.BoxLayout({
             orientation: Clutter.Orientation.VERTICAL,
-            style_class: 'dock-folder-popup',
+            style_class: 'dockrr-folder-popup',
         });
         box.add_child(new St.Label({
             text: folderName(this._settings),
-            style_class: 'dock-folder-title',
+            style_class: 'dockrr-folder-title',
             x_align: Clutter.ActorAlign.CENTER,
         }));
         const grid = new St.Widget({
@@ -547,7 +547,7 @@ class DockFolder {
                 tile.badge.set_style(badgeStyle(size, this._ext.defaultIconSize));
                 setBadge(tile.badge, this._ext.count(app));
                 return iconWithBadge(icon, tile.badge, size);
-            }, 'dock-folder-app');
+            }, 'dockrr-folder-app');
             tile.app = app;
             tile.x_align = Clutter.ActorAlign.CENTER;
             tile.baseIcon.setIconSize(POPUP_ICON_SIZE);
@@ -568,12 +568,12 @@ class DockFolder {
             this._makeTileDraggable(tile, app);
             const cell = new St.BoxLayout({
                 orientation: Clutter.Orientation.VERTICAL,
-                style_class: 'dock-folder-cell',
+                style_class: 'dockrr-folder-cell',
             });
             cell.add_child(tile);
             cell.add_child(new St.Label({
                 text: app.get_name(),
-                style_class: 'dock-folder-app-name',
+                style_class: 'dockrr-folder-app-name',
                 x_align: Clutter.ActorAlign.CENTER,
             }));
             this._cells.push({app, tile, indicator: null});
@@ -614,7 +614,7 @@ class DockFolder {
         };
         menu.setApp(app);
         ext.addIconItems(menu, app);
-        menu.actor.add_style_class_name('dock-folder-app-menu');
+        menu.actor.add_style_class_name('dockrr-folder-app-menu');
         Main.uiGroup.add_child(menu.actor);
         menu.actor.hide();
         const manager = new PopupMenu.PopupMenuManager(tile);
@@ -707,8 +707,9 @@ class DockFolder {
     }
 }
 
-export default class DockFoldersExtension extends Extension {
+export default class DockrrExtension extends Extension {
     enable() {
+        moveOldData();   // ~/.config/dock-folders and its pictures, once
         this._config = [];
         this._docks = new Map();     // dash -> {folders, restore}
         this._watched = [];          // [settings, signal id] per folder
@@ -1056,7 +1057,7 @@ export default class DockFoldersExtension extends Extension {
                 try {
                     writeConfig(this._config, [...this._singleWindow]);
                 } catch (e) {
-                    console.warn(`Dock Folders: saving ${configFile().get_path()}: ${e.message}`);
+                    console.warn(`Dockrr: saving ${configFile().get_path()}: ${e.message}`);
                 }
             }
             return GLib.SOURCE_REMOVE;
@@ -1144,20 +1145,20 @@ export default class DockFoldersExtension extends Extension {
                 limit = i + 1;
         });
         const slot = Math.min(limit,
-            this._slotAt(dash, children, current, current ? dash._dockFoldersSlot : -1, null));
+            this._slotAt(dash, children, current, current ? dash._dockrrSlot : -1, null));
         if (own !== -1 && (slot === own || slot === own + 1)) {
             if (current)
                 dash._clearDragPlaceholder();
-            dash._dockFoldersSlot = -1;
+            dash._dockrrSlot = -1;
             return DND.DragMotionResult.CONTINUE;
         }
-        if (current && dash._dockFoldersSlot === slot)
+        if (current && dash._dockrrSlot === slot)
             return DND.DragMotionResult.MOVE_DROP;
         current?.destroy();
         const placeholder = this._makePlaceholder(dash, children, slot, !current);
         dash._dragPlaceholder = placeholder;
         dash._dragPlaceholderPos = box.get_children().indexOf(placeholder);
-        dash._dockFoldersSlot = slot;
+        dash._dockrrSlot = slot;
         return DND.DragMotionResult.MOVE_DROP;
     }
 
@@ -1196,7 +1197,7 @@ export default class DockFoldersExtension extends Extension {
         const placed = new Set(entries.map(e => e.id));
         this._config = [...entries, ...this._config.filter(e => !placed.has(e.id))];
         this._save();
-        console.log(`Dock Folders: drop ${id} at pinned ${favPos}; folders ${JSON.stringify(this._config)}`);
+        console.log(`Dockrr: drop ${id} at pinned ${favPos}; folders ${JSON.stringify(this._config)}`);
         global.compositor.get_laters().add(Meta.LaterType.BEFORE_REDRAW, () => {
             if (id in favorites)
                 appFavorites.moveFavoriteToPos(id, favPos);
@@ -1215,7 +1216,7 @@ export default class DockFoldersExtension extends Extension {
     }
 
     _moveTo(dash, id, index) {
-        console.log(`Dock Folders: move ${id} to ${index}; row: ${this._describeRow(dash)}`);
+        console.log(`Dockrr: move ${id} to ${index}; row: ${this._describeRow(dash)}`);
         const entries = folderEntries(moveInRow(this._row(dash), id, index));
         const placed = new Set(entries.map(e => e.id));
         const config = [...entries, ...this._config.filter(e => !placed.has(e.id))];
@@ -1223,7 +1224,7 @@ export default class DockFoldersExtension extends Extension {
             return false;
         this._config = config;
         this._docks.forEach((_dock, d) => this._place(d));
-        console.log(`Dock Folders: now ${JSON.stringify(config)}; row: ${this._describeRow(dash)}`);
+        console.log(`Dockrr: now ${JSON.stringify(config)}; row: ${this._describeRow(dash)}`);
         return true;
     }
 
@@ -1235,7 +1236,7 @@ export default class DockFoldersExtension extends Extension {
         try {
             writeConfig(this._config);
         } catch (e) {
-            console.warn(`Dock Folders: saving ${configFile().get_path()}: ${e.message}`);
+            console.warn(`Dockrr: saving ${configFile().get_path()}: ${e.message}`);
         }
     }
 
@@ -1298,7 +1299,7 @@ export default class DockFoldersExtension extends Extension {
                 try {
                     ext._addFolderItems(this);
                 } catch (e) {
-                    console.warn(`Dock Folders: ${e.message}`);
+                    console.warn(`Dockrr: ${e.message}`);
                 }
                 return result;
             };
@@ -1308,7 +1309,7 @@ export default class DockFoldersExtension extends Extension {
                 else
                     delete proto.popupMenu;
             });
-            console.log(`Dock Folders: Add to Folder in the menus of ${proto.constructor?.name ?? 'dock icons'}`);
+            console.log(`Dockrr: Add to Folder in the menus of ${proto.constructor?.name ?? 'dock icons'}`);
         }
     }
 
@@ -1336,7 +1337,7 @@ export default class DockFoldersExtension extends Extension {
         try {
             reconcile();
         } catch (e) {
-            console.warn(`Dock Folders: launchers: ${e.message}`);
+            console.warn(`Dockrr: launchers: ${e.message}`);
         }
     }
 
@@ -1363,7 +1364,7 @@ export default class DockFoldersExtension extends Extension {
                 try {
                     setAppIcon(app, path);
                 } catch (e) {
-                    console.warn(`Dock Folders: icon of ${app.id}: ${e.message}`);
+                    console.warn(`Dockrr: icon of ${app.id}: ${e.message}`);
                 }
             });
         });
@@ -1372,7 +1373,7 @@ export default class DockFoldersExtension extends Extension {
                 try {
                     resetAppIcon(app);
                 } catch (e) {
-                    console.warn(`Dock Folders: icon of ${app.id}: ${e.message}`);
+                    console.warn(`Dockrr: icon of ${app.id}: ${e.message}`);
                 }
             });
         }

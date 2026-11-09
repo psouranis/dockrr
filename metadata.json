@@ -1,10 +1,10 @@
 {
-  "uuid": "dock-folders@psouranis.github.io",
-  "name": "Dock Folders",
-  "description": "GNOME's app folders in Dash to Dock: a folder icon that opens a pop-up grid of its apps, red unread badges, and no separate dock icons for the apps inside. Drag a folder to move it; choose the folders in the settings.",
+  "uuid": "dockrr@psouranis.github.io",
+  "name": "Dockrr",
+  "description": "More from Dash to Dock: GNOME's app folders in the dock (a folder icon that opens a pop-up grid of its apps, with unread badges and no separate icons for the apps inside); the song playing now, in a card at the dock's end with its cover, previous / play-pause / next and a progress line; and your own app icons and window classes, from an app's right-click menu or a file, kept through the apps' updates. Formerly Dock Folders.",
   "shell-version": [
     "48"
   ],
-  "version": 2,
-  "url": "https://github.com/psouranis/dock-folders"
+  "version": 3,
+  "url": "https://github.com/psouranis/dockrr"
 }

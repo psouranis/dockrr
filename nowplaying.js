@@ -108,21 +108,21 @@ class Tile {
         // The card: the row, with the progress line laid over its bottom edge
         // (so the dock gets no taller).
         this.section = new St.Widget({
-            style_class: 'dock-folders-now-playing',
+            style_class: 'dockrr-now-playing',
             layout_manager: new Clutter.BinLayout(),
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
             reactive: true,
         });
         this._row = new St.BoxLayout({
-            style_class: 'dock-folders-now-playing-row',
+            style_class: 'dockrr-now-playing-row',
             vertical: !this._horizontal,
             x_expand: true,
             y_expand: true,
         });
         this.section.add_child(this._row);
         this._progress = new St.Widget({
-            style_class: 'dock-folders-now-playing-progress',
+            style_class: 'dockrr-now-playing-progress',
             x_expand: true,
             y_expand: true,
             x_align: Clutter.ActorAlign.START,
@@ -134,7 +134,7 @@ class Tile {
         this.section.connect('notify::width', () => this._drawProgress(false));
 
         this._cover = new St.Button({
-            style_class: 'dock-folders-now-playing-cover',
+            style_class: 'dockrr-now-playing-cover',
             can_focus: true,
             track_hover: true,
         });
@@ -148,7 +148,7 @@ class Tile {
         // Title (scrolls when long) over artist (cut with "…"): only in a dock
         // along the top or bottom; a side dock is too narrow.
         this._text = new St.BoxLayout({
-            style_class: 'dock-folders-now-playing-text',
+            style_class: 'dockrr-now-playing-text',
             vertical: true,
             y_align: Clutter.ActorAlign.CENTER,
             x_expand: true,
@@ -158,18 +158,18 @@ class Tile {
             layout_manager: new Clutter.FixedLayout(),
             clip_to_allocation: true,
         });
-        this._title = new St.Label({style_class: 'dock-folders-now-playing-title'});
+        this._title = new St.Label({style_class: 'dockrr-now-playing-title'});
         this._title.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this._titleClip.add_child(this._title);
         this._title.connect('notify::width', () => this._fitTitle());
-        this._artist = new St.Label({style_class: 'dock-folders-now-playing-artist'});
+        this._artist = new St.Label({style_class: 'dockrr-now-playing-artist'});
         this._artist.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         this._text.add_child(this._titleClip);
         this._text.add_child(this._artist);
         this._row.add_child(this._text);
 
         const buttons = new St.BoxLayout({
-            style_class: 'dock-folders-now-playing-buttons',
+            style_class: 'dockrr-now-playing-buttons',
             vertical: !this._horizontal,
             y_align: Clutter.ActorAlign.CENTER,
             x_align: Clutter.ActorAlign.CENTER,
@@ -189,7 +189,7 @@ class Tile {
 
     _button(iconName, accessibleName, action) {
         const button = new St.Button({
-            style_class: 'dock-folders-now-playing-button',
+            style_class: 'dockrr-now-playing-button',
             accessible_name: accessibleName,
             can_focus: true,
             track_hover: true,

@@ -1,36 +1,36 @@
-/* Dock Folders. The dock icon's size, radius and
+/* Dockrr. The dock icon's size, radius and
    padding are set in extension.js from the dock's icon size. */
 
 /* The dock icon: a translucent rounded square. */
-.dock-folder-icon {
+.dockrr-folder-icon {
   background-color: rgba(255, 255, 255, 0.16);
 }
-.dock-folder-button:hover .dock-folder-icon,
-.dock-folder-button:focus .dock-folder-icon {
+.dockrr-folder-button:hover .dockrr-folder-icon,
+.dockrr-folder-button:focus .dockrr-folder-icon {
   background-color: rgba(255, 255, 255, 0.28);
 }
-.dock-folder-button:checked .dock-folder-icon {
+.dockrr-folder-button:checked .dockrr-folder-icon {
   background-color: rgba(255, 255, 255, 0.36);
 }
 /* An app dragged over the folder: it goes in on release. */
-.dock-folder-button:drop .dock-folder-icon {
+.dockrr-folder-button:drop .dockrr-folder-icon {
   background-color: rgba(255, 255, 255, 0.5);
   border: 2px solid rgba(255, 255, 255, 0.85);
 }
 
 /* The pop-up. */
-.dock-folder-popup {
+.dockrr-folder-popup {
   padding: 6px 10px 10px;
   spacing: 10px;
 }
-.dock-folder-title {
+.dockrr-folder-title {
   font-weight: bold;
   font-size: 1.1em;
 }
-.dock-folder-cell {
+.dockrr-folder-cell {
   margin: 2px 4px;
 }
-.dock-folder-app-name {
+.dockrr-folder-app-name {
   margin-top: 6px;
   font-size: 0.9em;
   max-width: 84px;
@@ -39,7 +39,7 @@
    .notification-badge; the pop-up is outside the dock, so the same look is
    repeated here (Dash to Dock's stylesheet.css). The font size is set in
    extension.js, as Dash to Dock sets its own. */
-.dock-folder-badge {
+.dockrr-badge {
   color: white;
   background-color: red;
   padding: 0.2em 0.5em;
@@ -54,57 +54,57 @@
    the cover, the title and artist, and the three buttons. Its background
    and edge are tinted from the cover in nowplaying.js (these are the
    colours without a cover); the progress line too. */
-.dock-folders-now-playing {
+.dockrr-now-playing {
   background-color: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 14px;
   margin: 0 10px;
   transition-duration: 400ms;
 }
-.dock-folders-now-playing-row {
+.dockrr-now-playing-row {
   padding: 3px 8px 3px 3px;
   spacing: 10px;
 }
-.dock-folders-now-playing-cover {
+.dockrr-now-playing-cover {
   border-radius: 10px;
   padding: 0;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
-.dock-folders-now-playing-cover:hover {
+.dockrr-now-playing-cover:hover {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
-.dock-folders-now-playing-text {
+.dockrr-now-playing-text {
   spacing: 1px;
   min-width: 60px;
 }
-.dock-folders-now-playing-title {
+.dockrr-now-playing-title {
   font-weight: 600;
   font-size: 0.88em;
   color: rgba(255, 255, 255, 0.95);
 }
-.dock-folders-now-playing-artist {
+.dockrr-now-playing-artist {
   font-size: 0.76em;
   color: rgba(255, 255, 255, 0.62);
   max-width: 220px;
 }
-.dock-folders-now-playing-buttons {
+.dockrr-now-playing-buttons {
   spacing: 0;
 }
-.dock-folders-now-playing-button {
+.dockrr-now-playing-button {
   border-radius: 99px;
   padding: 5px;
   color: rgba(255, 255, 255, 0.85);
   transition-duration: 150ms;
 }
-.dock-folders-now-playing-button:hover {
+.dockrr-now-playing-button:hover {
   background-color: rgba(255, 255, 255, 0.16);
   color: #ffffff;
 }
-.dock-folders-now-playing-button:active {
+.dockrr-now-playing-button:active {
   background-color: rgba(255, 255, 255, 0.28);
 }
 /* The hairline that fills as the song plays, along the card's bottom. */
-.dock-folders-now-playing-progress {
+.dockrr-now-playing-progress {
   height: 2px;
   margin: 0 12px 1px;
   border-radius: 2px;

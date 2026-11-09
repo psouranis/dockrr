@@ -3,9 +3,9 @@
 //
 // Two sources, one engine (reconcile):
 //   - Change Icon… / Reset Icon, from an app's right-click menu: a picture of
-//     your own, copied to ~/.local/share/dock-folders/icons (so moving or
+//     your own, copied to ~/.local/share/dockrr/icons (so moving or
 //     deleting the original doesn't break it).
-//   - ~/.config/dock-folders/launchers.json, for a setup kept in a repo:
+//   - ~/.config/dockrr/launchers.json, for a setup kept in a repo:
 //       {"launchers": [
 //         {"ids": ["com.microsoft.VSCode", "code"], "icon": "/path/to.png"},
 //         {"ids": ["org.signal.Signal"], "wmclass": "org.signal.Signal"},
@@ -39,18 +39,27 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 const GROUP = 'Desktop Entry';
-const OURS = 'X-DockFolders-Override';          // true: the file is our copy
-const SOURCE = 'X-DockFolders-Source';          // the .desktop file it copies
-const CHOSEN = 'X-DockFolders-Icon';            // the picture chosen in the menu
-const ORIGINAL = 'X-DockFolders-OriginalIcon';  // a user file's own Icon=, edited in place
+const OURS = 'X-Dockrr-Override';          // true: the file is our copy
+const SOURCE = 'X-Dockrr-Source';          // the .desktop file it copies
+const CHOSEN = 'X-Dockrr-Icon';            // the picture chosen in the menu
+const ORIGINAL = 'X-Dockrr-OriginalIcon';  // a user file's own Icon=, edited in place
+// Dockrr was Dock Folders until 2026-11: its keys are read as these.
+const RENAMED = {
+    'X-DockFolders-Override': OURS,
+    'X-DockFolders-Source': SOURCE,
+    'X-DockFolders-Icon': CHOSEN,
+    'X-DockFolders-OriginalIcon': ORIGINAL,
+};
 // The earlier launcher-overrides script's mark: its copies are taken over.
 const LEGACY = 'X-Launcher-Override-Source';
 
 // Overridable by the tests.
 export const paths = {
     userApps: () => GLib.build_filenamev([GLib.get_user_data_dir(), 'applications']),
-    iconDir: () => GLib.build_filenamev([GLib.get_user_data_dir(), 'dock-folders', 'icons']),
-    launchers: () => GLib.build_filenamev([GLib.get_user_config_dir(), 'dock-folders', 'launchers.json']),
+    iconDir: () => GLib.build_filenamev([GLib.get_user_data_dir(), 'dockrr', 'icons']),
+    // Where pictures were kept as Dock Folders (moved by config.js, moveOldData).
+    oldIconDir: () => GLib.build_filenamev([GLib.get_user_data_dir(), 'dock-folders', 'icons']),
+    launchers: () => GLib.build_filenamev([GLib.get_user_config_dir(), 'dockrr', 'launchers.json']),
     systemApps: () => [
         GLib.build_filenamev([GLib.get_user_data_dir(), 'flatpak', 'exports', 'share']),
         ...GLib.get_system_data_dirs(),
@@ -66,7 +75,35 @@ function load(path) {
     const keyfile = new GLib.KeyFile();
     keyfile.load_from_file(path,
         GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS);
+    renameOld(keyfile);
     return keyfile;
+}
+
+// A copy made as Dock Folders: its keys under their new names, and a picture
+// path into the old folder pointed at the new one (the next save keeps it).
+function renameOld(keyfile) {
+    const keys = (() => {
+        try {
+            return keyfile.get_keys(GROUP)[0];
+        } catch {
+            return [];
+        }
+    })();
+    for (const [old, now] of Object.entries(RENAMED)) {
+        if (!keys.includes(old))
+            continue;
+        if (!keys.includes(now))
+            keyfile.set_string(GROUP, now, keyfile.get_string(GROUP, old));
+        keyfile.remove_key(GROUP, old);
+    }
+    const oldDir = `${paths.oldIconDir()}/`;
+    for (const group of keyfile.get_groups()[0]) {
+        for (const key of ['Icon', CHOSEN, ORIGINAL]) {
+            const value = get(keyfile, key, group);
+            if (value.startsWith(oldDir))
+                keyfile.set_string(group, key, `${paths.iconDir()}/${value.slice(oldDir.length)}`);
+        }
+    }
 }
 
 function get(keyfile, key, group = GROUP) {
@@ -143,7 +180,7 @@ function readLaunchers() {
         return launchers.filter(l => Array.isArray(l?.ids) && l.ids.length > 0)
             .map(l => ({...l, ids: l.ids.map(bare)}));
     } catch (e) {
-        console.warn(`Dock Folders: ${paths.launchers()}: ${e.message}`);
+        console.warn(`Dockrr: ${paths.launchers()}: ${e.message}`);
         return [];
     }
 }
@@ -197,7 +234,7 @@ function copySource(keyfile) {
 }
 
 // The picture chosen in the menu for a launcher file, if any. (A copy made
-// before X-DockFolders-Icon existed: its Icon= if that's one of ours.)
+// before X-Dockrr-Icon existed: its Icon= if that's one of ours.)
 function chosenIcon(keyfile) {
     const chosen = get(keyfile, CHOSEN);
     if (chosen)
@@ -223,7 +260,7 @@ function moveFavorite(from, to) {
         return;
     favorites[i] = `${to}.desktop`;
     settings.set_strv('favorite-apps', [...new Set(favorites)]);
-    console.log(`Dock Folders: favourite ${from} is now ${to}`);
+    console.log(`Dockrr: favourite ${from} is now ${to}`);
 }
 
 // Brings every launcher we manage up to date. Returns whether a file changed.
@@ -252,7 +289,7 @@ export function reconcile() {
             for (const old of launcher.ids.filter(id => id !== current && !systemSource(id)))
                 moveFavorite(old, current);
         } catch (e) {
-            console.warn(`Dock Folders: launcher ${launcher.ids[0]}: ${e.message}`);
+            console.warn(`Dockrr: launcher ${launcher.ids[0]}: ${e.message}`);
         }
     }
 
@@ -281,13 +318,13 @@ export function reconcile() {
                 } else if (remove(path)) {
                     forgetPicture(chosen);
                     changed = true;
-                    console.log(`Dock Folders: ${name} removed (${exists(source) ? 'nothing overrides it' : 'its app is gone'})`);
+                    console.log(`Dockrr: ${name} removed (${exists(source) ? 'nothing overrides it' : 'its app is gone'})`);
                 }
             } else if (has(keyfile, ORIGINAL) || has(keyfile, LEGACY)) {
                 changed = writeInPlace(path, chosen) || changed;
             }
         } catch (e) {
-            console.warn(`Dock Folders: ${path}: ${e.message}`);
+            console.warn(`Dockrr: ${path}: ${e.message}`);
         }
     }
     children.close(null);
@@ -361,7 +398,7 @@ export function pickPicture(dir, title, onPicked) {
         proc = Gio.Subprocess.new(['gjs', '-m', script, title],
             Gio.SubprocessFlags.STDOUT_PIPE);
     } catch (e) {
-        console.warn(`Dock Folders: file chooser: ${e.message}`);
+        console.warn(`Dockrr: file chooser: ${e.message}`);
         return;
     }
     proc.communicate_utf8_async(null, null, (_p, result) => {
@@ -371,7 +408,7 @@ export function pickPicture(dir, title, onPicked) {
             if (path)
                 onPicked(path);
         } catch (e) {
-            console.warn(`Dock Folders: file chooser: ${e.message}`);
+            console.warn(`Dockrr: file chooser: ${e.message}`);
         }
     });
 }
