@@ -49,3 +49,64 @@
   margin: 2px;
 }
 
+
+/* The song playing now (nowplaying.js), at the dock's end: one card with
+   the cover, the title and artist, and the three buttons. Its background
+   and edge are tinted from the cover in nowplaying.js (these are the
+   colours without a cover); the progress line too. */
+.dock-folders-now-playing {
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  margin: 0 10px;
+  transition-duration: 400ms;
+}
+.dock-folders-now-playing-row {
+  padding: 3px 8px 3px 3px;
+  spacing: 10px;
+}
+.dock-folders-now-playing-cover {
+  border-radius: 10px;
+  padding: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+.dock-folders-now-playing-cover:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+.dock-folders-now-playing-text {
+  spacing: 1px;
+  min-width: 60px;
+}
+.dock-folders-now-playing-title {
+  font-weight: 600;
+  font-size: 0.88em;
+  color: rgba(255, 255, 255, 0.95);
+}
+.dock-folders-now-playing-artist {
+  font-size: 0.76em;
+  color: rgba(255, 255, 255, 0.62);
+  max-width: 220px;
+}
+.dock-folders-now-playing-buttons {
+  spacing: 0;
+}
+.dock-folders-now-playing-button {
+  border-radius: 99px;
+  padding: 5px;
+  color: rgba(255, 255, 255, 0.85);
+  transition-duration: 150ms;
+}
+.dock-folders-now-playing-button:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+.dock-folders-now-playing-button:active {
+  background-color: rgba(255, 255, 255, 0.28);
+}
+/* The hairline that fills as the song plays, along the card's bottom. */
+.dock-folders-now-playing-progress {
+  height: 2px;
+  margin: 0 12px 1px;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.55);
+}

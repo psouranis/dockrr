@@ -19,6 +19,14 @@
 //     the dock: prefs.js).
 //   - Right-click an app in the dock: Add to Folder puts it in one of the
 //     dock's folders, or New Folder… makes one with it, where it was.
+//   - Right-click an app, in the dock or a folder's pop-up: Change Icon…
+//     gives it a picture of your own as its icon, Reset Icon takes it back;
+//     ~/.config/dock-folders/launchers.json can set icons and window classes
+//     too (for a setup kept in a repo). Kept through the apps' updates and
+//     renames (icons.js).
+//   - The song playing now, in a section of its own at the dock's end, after
+//     a divider: click to play/pause, right-click for previous/next
+//     (nowplaying.js).
 //
 // Each folder's name and apps are the app-grid folder's own
 // (org.gnome.desktop.app-folders), read live: make a folder in Show Apps by
@@ -33,8 +41,10 @@
 //     every change; its Super+number shortcuts (_activateApp) skip the
 //     folders, as its number overlays do;
 //   - the counts are the ones Dash to Dock puts on its own icons: the app's
-//     launcher count (Signal, Slack, Discord set one) plus its unread GNOME
-//     notifications (dockManager.remoteModel, .notificationsMonitor);
+//     launcher count (Signal, Slack, Discord set one) plus its GNOME
+//     notifications (dockManager.remoteModel, .notificationsMonitor), except
+//     that an app that publishes a launcher count is counted by it alone
+//     (a leftover notification can't leave a stuck badge: _reportsCount);
 //   - each dock's _appSystem is wrapped so get_running() leaves the folder
 //     apps out;
 //   - the running indicator is Dash to Dock's own AppIconIndicator, drawn on
@@ -70,6 +80,11 @@ import {
     readSingleWindowApps, writeConfig,
 } from './config.js';
 import {folderEntries, moveInRow, newFolderId, placeFolders, rawIndex} from './order.js';
+import {NowPlaying} from './nowplaying.js';
+import {
+    canChangeIcon, hasCustomIcon, paths as launcherPaths, pickPicture, reconcile, resetAppIcon,
+    setAppIcon,
+} from './icons.js';
 
 const DASH_TO_DOCK = 'dash-to-dock@micxgx.gmail.com';
 const POPUP_ICON_SIZE = 56;
@@ -598,6 +613,7 @@ class DockFolder {
                 this._newWindowItem.visible = false;
         };
         menu.setApp(app);
+        ext.addIconItems(menu, app);
         menu.actor.add_style_class_name('dock-folder-app-menu');
         Main.uiGroup.add_child(menu.actor);
         menu.actor.hide();
@@ -698,6 +714,8 @@ export default class DockFoldersExtension extends Extension {
         this._watched = [];          // [settings, signal id] per folder
         this._entries = [];          // disconnect functions (counts, windows)
         this._hidden = new Set();    // desktop ids kept out of the dock
+        this._countReporters = new Set();   // apps that publish their own unread count
+        this._nowPlaying = new NowPlaying();   // the song tile (nowplaying.js)
         this._placeholders = new Set();   // the gaps shown while a folder is dragged
         this._singleWindow = new Set(readSingleWindowApps());
         this._timeouts = new Set();
@@ -709,6 +727,20 @@ export default class DockFoldersExtension extends Extension {
             () => this._stateChanged());
         this._focusId = Shell.WindowTracker.get_default().connect('notify::focus-app',
             () => this._stateChanged());
+        // Apps installed, updated or removed, or an icon changed (icons.js):
+        // the launchers we manage are brought up to date, and the folders'
+        // pictures follow. An update changes many files at once, so the
+        // launchers are done once it settles.
+        this._reconcileLaunchers();
+        this._installedId = Shell.AppSystem.get_default().connect('installed-changed', () => {
+            this._queueReconcile();
+            if (this._docks?.size)
+                this._folderChanged();
+        });
+        // launchers.json (icons and window classes kept in a repo) edited.
+        this._launchersMonitor = Gio.File.new_for_path(launcherPaths.launchers())
+            .monitor_file(Gio.FileMonitorFlags.NONE, null);
+        this._launchersMonitor.connect('changed', () => this._queueReconcile());
         // The config changes from the preferences window, or by hand.
         this._configMonitor = configFile().monitor_file(Gio.FileMonitorFlags.NONE, null);
         this._configMonitor.connect('changed', () => {
@@ -788,16 +820,39 @@ export default class DockFoldersExtension extends Extension {
 
     // An app's unread count, worked out as Dash to Dock does for its icons.
     // No badges at all with its "show icons emblems" off, or in Do Not
-    // Disturb (appIconIndicators.js, AppIconIndicator).
+    // Disturb (appIconIndicators.js, AppIconIndicator). One difference: an app
+    // that publishes its own count is counted by it alone (_reportsCount).
     count(app) {
         const manager = this._manager;
         if (!manager?.settings?.showIconsEmblems || manager.notificationsMonitor?.dndMode)
             return 0;
         const entry = manager.remoteModel?.lookupById(app.id);
         const launcher = entry?.['count-visible'] ? entry.count ?? 0 : 0;
+        if (this._reportsCount(app.id))
+            return launcher;
         if (launcher > 0 && manager.settings?.applicationCounterOverridesNotifications)
             return launcher;
         return launcher + (manager.notificationsMonitor?.getAppNotificationsCount(app.id) ?? 0);
+    }
+
+    // Signal, Slack and Discord publish their own unread count (the launcher
+    // API) and keep it right: reading a chat on the phone takes it to 0. Their
+    // GNOME notifications aren't a count. Dash to Dock counts each one until
+    // it's dismissed, seen or not, and one an app posted before it restarted
+    // (an update) can never be withdrawn by it: Signal showed "1" with nothing
+    // unread for days (2026-11-08). So once an app has published a count this
+    // session, its notifications stop counting, even after it quits. Apps
+    // that never publish one (Thunderbird, viber-notify) still count theirs.
+    _reportsCount(id) {
+        if (this._countReporters.has(id))
+            return true;
+        // Dash to Dock keeps one source per publishing connection; none = never
+        // published, or quit before we looked.
+        const stack = this._manager?.remoteModel?._entrySourceStacks?.get(id);
+        if (!stack?._stack?.length)
+            return false;
+        this._countReporters.add(id);
+        return true;
     }
 
     // --- Dropping apps into folders --------------------------------------------
@@ -1274,6 +1329,53 @@ export default class DockFoldersExtension extends Extension {
         sub.menu.addAction(_('New Folder…'), () => this.newFolder(app, icon));
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         menu.addMenuItem(sub);
+        this.addIconItems(menu, app);
+    }
+
+    _reconcileLaunchers() {
+        try {
+            reconcile();
+        } catch (e) {
+            console.warn(`Dock Folders: launchers: ${e.message}`);
+        }
+    }
+
+    _queueReconcile() {
+        if (this._reconcileId)
+            return;
+        this._reconcileId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+            this._timeouts.delete(this._reconcileId);
+            this._reconcileId = 0;
+            this._reconcileLaunchers();
+            return GLib.SOURCE_REMOVE;
+        });
+        this._timeouts.add(this._reconcileId);
+    }
+
+    // Change Icon… and, once it has one, Reset Icon, at the end of an app's
+    // menu (icons.js).
+    addIconItems(menu, app) {
+        if (!canChangeIcon(app))
+            return;
+        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        menu.addAction(_('Change Icon…'), () => {
+            pickPicture(this.dir, _('Choose an Icon for %s').format(app.get_name()), path => {
+                try {
+                    setAppIcon(app, path);
+                } catch (e) {
+                    console.warn(`Dock Folders: icon of ${app.id}: ${e.message}`);
+                }
+            });
+        });
+        if (hasCustomIcon(app)) {
+            menu.addAction(_('Reset Icon'), () => {
+                try {
+                    resetAppIcon(app);
+                } catch (e) {
+                    console.warn(`Dock Folders: icon of ${app.id}: ${e.message}`);
+                }
+            });
+        }
     }
 
     // A new app-grid folder with `app` in it (out of any other), in the dock
@@ -1305,6 +1407,7 @@ export default class DockFoldersExtension extends Extension {
 
     _clear() {
         this._unpatchAppMenus();
+        this._nowPlaying?.detachAll();
         // Unwrap first: removing the folder icons must not re-place them.
         this._docks?.forEach(dock => {
             dock.restore();
@@ -1334,6 +1437,7 @@ export default class DockFoldersExtension extends Extension {
             this._docks.set(dash, {folders, restore: this._wrapDash(dock, dash)});
             folders.forEach(f => dash._box.add_child(f.item));
             this._place(dash);
+            this._nowPlaying?.attach(dash);
         }
         this._patchAppMenus();
         this._folderChanged();
@@ -1487,6 +1591,9 @@ export default class DockFoldersExtension extends Extension {
     disable() {
         Main.extensionManager.disconnect(this._stateId);
         Shell.AppSystem.get_default().disconnect(this._appStateId);
+        Shell.AppSystem.get_default().disconnect(this._installedId);
+        this._launchersMonitor.cancel();
+        this._reconcileId = 0;
         Shell.WindowTracker.get_default().disconnect(this._focusId);
         this._configMonitor.cancel();
         this._timeouts.forEach(id => GLib.source_remove(id));
@@ -1494,6 +1601,8 @@ export default class DockFoldersExtension extends Extension {
         DND.removeDragMonitor(this._dragMonitor);
         this._dragEndIds.forEach(id => Main.overview.disconnect(id));
         this._unhook();
+        this._nowPlaying?.destroy();
+        this._nowPlaying = null;
         this._docks = null;
         this._watched = null;
         this._entries = null;
