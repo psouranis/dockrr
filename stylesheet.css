@@ -52,26 +52,27 @@
 
 /* The song playing now (nowplaying.js), at the dock's end: one card with
    the cover, the title and artist, and the three buttons. Its background
-   and edge are tinted from the cover in nowplaying.js (these are the
-   colours without a cover); the progress line too. */
+   is a faint tint from the cover, set in nowplaying.js (this is the colour
+   without a cover); the progress line too. No edge. */
 .dockrr-now-playing {
-  background-color: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 14px;
-  margin: 0 10px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  margin: 0 6px;
   transition-duration: 400ms;
 }
 .dockrr-now-playing-row {
-  padding: 3px 8px 3px 3px;
-  spacing: 10px;
+  padding: 3px 10px 3px 3px;
+  spacing: 12px;
 }
 .dockrr-now-playing-cover {
   border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.08);
   padding: 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  transition-duration: 150ms;
 }
 .dockrr-now-playing-cover:hover {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 .dockrr-now-playing-text {
   spacing: 1px;
@@ -86,11 +87,11 @@
 }
 .dockrr-now-playing-artist {
   font-size: 0.76em;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.55);
   max-width: 200px;
 }
 .dockrr-now-playing-buttons {
-  spacing: 0;
+  spacing: 2px;
 }
 .dockrr-now-playing-button {
   border-radius: 99px;
@@ -105,10 +106,23 @@
 .dockrr-now-playing-button:active {
   background-color: rgba(255, 255, 255, 0.28);
 }
+/* Play/pause: the main button, a filled circle. */
+.dockrr-now-playing-play {
+  padding: 7px;
+  background-color: rgba(255, 255, 255, 0.92);
+  color: rgba(0, 0, 0, 0.85);
+}
+.dockrr-now-playing-play:hover {
+  background-color: #ffffff;
+  color: #000000;
+}
+.dockrr-now-playing-play:active {
+  background-color: rgba(255, 255, 255, 0.75);
+}
 /* The hairline that fills as the song plays, along the card's bottom. */
 .dockrr-now-playing-progress {
   height: 2px;
-  margin: 0 12px 1px;
+  margin: 0 16px 2px;
   border-radius: 2px;
-  background-color: rgba(255, 255, 255, 0.55);
+  background-color: rgba(255, 255, 255, 0.45);
 }

@@ -113,8 +113,14 @@ class Tile {
         this.section = new St.Widget({
             style_class: 'dockrr-now-playing',
             layout_manager: new Clutter.BinLayout(),
-            x_align: Clutter.ActorAlign.CENTER,
-            y_align: Clutter.ActorAlign.CENTER,
+            // Takes the dock's spare width and sits at its right end: in a
+            // dock as wide as the screen the spare width isn't all given to
+            // the apps, and a card with no claim on it landed somewhere new
+            // each time it came back.
+            x_expand: this._horizontal,
+            y_expand: !this._horizontal,
+            x_align: this._horizontal ? Clutter.ActorAlign.END : Clutter.ActorAlign.CENTER,
+            y_align: this._horizontal ? Clutter.ActorAlign.CENTER : Clutter.ActorAlign.END,
             reactive: true,
         });
         this._row = new St.BoxLayout({
@@ -181,12 +187,15 @@ class Tile {
             player => player.previous());
         this._play = this._button('media-playback-start-symbolic', _('Play'),
             player => player.playPause());
+        this._play.add_style_class_name('dockrr-now-playing-play');
         this._next = this._button('media-skip-forward-symbolic', _('Next'),
             player => player.next());
         [this._previous, this._play, this._next].forEach(b => buttons.add_child(b));
         this._row.add_child(buttons);
 
-        dash._dashContainer.add_child(this.section);
+        // Right after the apps (before Show Apps, which Dash to Dock keeps
+        // moving to the container's end), so it sits with the dock's icons.
+        dash._dashContainer.insert_child_above(this.section, dash._scrollView ?? null);
         this._sizeId = dash.connect('icon-size-changed', () => this._apply(this._owner.player));
     }
 
@@ -207,9 +216,8 @@ class Tile {
     }
 
     _coverIcon(player, size) {
-        const cover = coverUri(player.trackCoverUrl);
-        const gicon = cover ? new Gio.FileIcon({file: Gio.File.new_for_uri(cover)})
-            : playerApp(player)?.get_icon() ?? new Gio.ThemedIcon({name: 'audio-x-generic'});
+        const gicon = playerApp(player)?.get_icon() ??
+            new Gio.ThemedIcon({name: 'audio-x-generic'});
         return new St.Icon({gicon, icon_size: size});
     }
 
@@ -249,10 +257,18 @@ class Tile {
     _apply(player) {
         if (!player?.trackTitle)
             return;
+        // The cover fills a square, cropped (not squeezed) when the art is
+        // not square; without art, the player's icon in the middle.
         const size = Math.max(16, this._dash.iconSize - 4);
-        this._cover.set_child(this._coverIcon(player, size));
-        const small = Math.max(12, Math.round(this._dash.iconSize * 0.42));
-        [this._previous, this._play, this._next].forEach(b => (b.child.icon_size = small));
+        this._cover.set_size(size, size);
+        const art = coverUri(player.trackCoverUrl);
+        this._cover.set_style(art
+            ? `background-image: url("${art.replace(/"/g, '%22')}"); background-size: cover; background-position: center;`
+            : null);
+        this._cover.set_child(art ? null : this._coverIcon(player, Math.round(size * 0.7)));
+        const small = Math.max(12, Math.round(this._dash.iconSize * 0.38));
+        [this._previous, this._next].forEach(b => (b.child.icon_size = small));
+        this._play.child.icon_size = Math.max(14, Math.round(this._dash.iconSize * 0.46));
 
         const playing = player.status === 'Playing';
         this._play.child.icon_name = playing
@@ -272,7 +288,7 @@ class Tile {
         const colour = coverColour(coverUri(player.trackCoverUrl));
         const colours = colour ? tint(colour) : null;
         this.section.set_style(colours
-            ? `background-color: ${colours.background}; border-color: ${colours.border};`
+            ? `background-color: ${colours.background};`
             : null);
         this._progress.set_style(colours ? `background-color: ${colours.accent};` : null);
     }
@@ -288,8 +304,8 @@ class Tile {
         this._progress.visible = fraction !== null && fraction !== undefined;
         if (!this._progress.visible)
             return;
-        // Inside the line's side margins (stylesheet.css: 12px each).
-        const width = Math.round(Math.max(0, this.section.width - 24) * fraction);
+        // Inside the line's side margins (stylesheet.css: 16px each).
+        const width = Math.round(Math.max(0, this.section.width - 32) * fraction);
         this._progress.remove_transition('width');
         if (animate && width > this._progress.width) {
             this._progress.ease({width, duration: 900, mode: Clutter.AnimationMode.LINEAR});

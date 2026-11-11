@@ -59,8 +59,7 @@ check('a grey cover: its average grey',
     dominantColour([100, 100, 100, 200, 200, 200], 2, 1, 3, 6), [150, 150, 150]);
 check('nothing visible: none', dominantColour([0, 0, 0, 0], 1, 1, 4, 4), null);
 check('the tint', tint([100, 50, 0]), {
-    background: 'rgba(100, 50, 0, 0.32)',
-    border: 'rgba(100, 50, 0, 0.55)',
+    background: 'rgba(100, 50, 0, 0.22)',
     accent: 'rgb(170, 142, 115)',
 });
 

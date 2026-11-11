@@ -79,8 +79,7 @@ export function dominantColour(pixels, width, height, channels, rowstride) {
 export function tint([r, g, b]) {
     const light = v => Math.round(v + (255 - v) * 0.45);
     return {
-        background: `rgba(${r}, ${g}, ${b}, 0.32)`,
-        border: `rgba(${r}, ${g}, ${b}, 0.55)`,
+        background: `rgba(${r}, ${g}, ${b}, 0.22)`,
         accent: `rgb(${light(r)}, ${light(g)}, ${light(b)})`,
     };
 }
