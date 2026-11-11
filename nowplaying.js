@@ -35,7 +35,10 @@ import {
     coverUri, describe, dominantColour, matchApp, pickPlayer, progressFraction, tint,
 } from './track.js';
 
-const TITLE_WIDTH = 220;        // px; longer titles scroll
+// The text column's width: fixed, so the card is the same size for every
+// song (a card sized to its text grew and shrank, and being pinned to the
+// dock's end, jumped left and right). Keep it in step with stylesheet.css.
+const TITLE_WIDTH = 200;        // px; longer titles scroll
 const SCROLL_SPEED = 30;        // px a second
 const SCROLL_PAUSE = 1800;      // ms at each end
 const FADE = 140;               // ms each way between songs

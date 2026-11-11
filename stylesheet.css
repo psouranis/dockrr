@@ -75,7 +75,9 @@
 }
 .dockrr-now-playing-text {
   spacing: 1px;
-  min-width: 60px;
+  /* Fixed: the card keeps one size whatever the song (nowplaying.js,
+     TITLE_WIDTH). */
+  width: 200px;
 }
 .dockrr-now-playing-title {
   font-weight: 600;
@@ -85,7 +87,7 @@
 .dockrr-now-playing-artist {
   font-size: 0.76em;
   color: rgba(255, 255, 255, 0.62);
-  max-width: 220px;
+  max-width: 200px;
 }
 .dockrr-now-playing-buttons {
   spacing: 0;
