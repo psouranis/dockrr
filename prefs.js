@@ -9,11 +9,10 @@ import Gio from 'gi://Gio';
 import {ExtensionPreferences, gettext as _} from
     'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import {folderName, folderSettings, moveOldData, readConfig, writeConfig} from './config.js';
+import {folderName, folderSettings, readConfig, writeConfig} from './config.js';
 
 export default class DockrrPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
-        moveOldData();   // opened before the dock started: same config either way
         const page = new Adw.PreferencesPage({icon_name: 'folder-symbolic'});
         window.add(page);
 

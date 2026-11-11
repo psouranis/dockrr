@@ -77,7 +77,7 @@ import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js
 
 import {
     KNOWN_SINGLE_WINDOW_APPS, configFile, folderName, folderSettings, readConfig,
-    moveOldData, readSingleWindowApps, writeConfig,
+    readSingleWindowApps, writeConfig,
 } from './config.js';
 import {folderEntries, moveInRow, newFolderId, placeFolders, rawIndex} from './order.js';
 import {NowPlaying} from './nowplaying.js';
@@ -709,7 +709,6 @@ class DockFolder {
 
 export default class DockrrExtension extends Extension {
     enable() {
-        moveOldData();   // ~/.config/dock-folders and its pictures, once
         this._config = [];
         this._docks = new Map();     // dash -> {folders, restore}
         this._watched = [];          // [settings, signal id] per folder

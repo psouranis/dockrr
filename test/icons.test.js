@@ -19,13 +19,11 @@ const dir = (...p) => GLib.build_filenamev([root, ...p]);
 const sys = dir('system', 'applications');
 const user = dir('user', 'applications');
 const pics = dir('user', 'dockrr', 'icons');
-const oldPics = dir('user', 'dock-folders', 'icons');
 for (const d of [sys, user, pics])
     GLib.mkdir_with_parents(d, 0o755);
 let favorites = [];
 paths.userApps = () => user;
 paths.iconDir = () => pics;
-paths.oldIconDir = () => oldPics;
 paths.launchers = () => dir('launchers.json');
 paths.systemApps = () => [sys];
 paths.favorites = () => ({
@@ -82,9 +80,8 @@ check('the old copy is gone', read(`${user}/code.desktop`), null);
 check('the favourite moved', favorites, ['com.example.Code.desktop', 'other.desktop']);
 
 // No longer declared: its copy goes, the app's own launcher shows again
-// (also launcher-overrides' copies, which are taken over).
 write(`${sys}/files.desktop`, entry('Files'));
-write(`${user}/files.desktop`, `${entry('Files').replace('[Desktop Entry]', `[Desktop Entry]\nX-Launcher-Override-Source=${sys}/files.desktop`)}`.replace('Icon=files', 'Icon=/icons/old.png'));
+write(`${user}/files.desktop`, `${entry('Files').replace('[Desktop Entry]', `[Desktop Entry]\nX-Dockrr-Override=true\nX-Dockrr-Source=${sys}/files.desktop`)}`.replace('Icon=files', 'Icon=/icons/old.png'));
 reconcile();
 check('an undeclared copy is deleted', read(`${user}/files.desktop`), null);
 
@@ -135,20 +132,6 @@ setAppIcon(app('viewer'), picture);
 GLib.unlink(`${sys}/viewer.desktop`);
 reconcile();
 check('uninstalled: its copy is gone', read(`${user}/viewer.desktop`), null);
-
-// A copy Dock Folders made (its old keys, its old picture folder): taken over.
-write(`${sys}/legacy.desktop`, entry('Legacy'));
-write(`${user}/legacy.desktop`, entry('Legacy').replace('[Desktop Entry]',
-    `[Desktop Entry]\nX-DockFolders-Override=true\nX-DockFolders-Source=${sys}/legacy.desktop\nX-DockFolders-Icon=${oldPics}/legacy-1.png`)
-    .replace('Icon=legacy', `Icon=${oldPics}/legacy-1.png`));
-launchers([]);
-reconcile();
-const legacy = read(`${user}/legacy.desktop`);
-check('an old copy is kept (it has a picture of its own)', legacy !== null, true);
-check('its keys renamed', key(legacy, 'X-Dockrr-Icon'), `${pics}/legacy-1.png`);
-check('the old keys gone', key(legacy, 'X-DockFolders-Icon'), null);
-check('its picture path moved to the new folder', key(legacy, 'Icon'), `${pics}/legacy-1.png`);
-check('its source kept', key(legacy, 'X-Dockrr-Source'), `${sys}/legacy.desktop`);
 
 GLib.spawn_command_line_sync(`rm -rf ${root}`);
 if (failed) {

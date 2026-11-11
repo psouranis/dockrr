@@ -1,22 +1,11 @@
-<p align="center"><img src="logo.svg" alt="Dockrr: a ginger cat purring on a dock" width="160"></p>
+<p align="center"><img src="logo.svg" alt="Dockrr: a cat sitting on a dock" width="160"></p>
 
-# Dockrr
+<h1 align="center">Dockrr</h1>
 
-More from [Dash to Dock](https://github.com/micheleg/dash-to-dock), for GNOME 48:
-
-- **Folders in the dock**: GNOME's own app folders, as dock icons that open a
-  pop-up grid of their apps, with unread badges, drag-to-move, and no
-  separate dock icons for the apps inside.
-- **The song playing now**: a card at the dock's end with the cover, the
-  title and artist, previous / play-pause / next and a progress line, tinted
-  by the cover.
-- **Your own app icons and window classes**: from an app's right-click menu
-  (Change Icon…) or a file kept in a repo (`launchers.json`), kept through
-  the apps' updates and renames.
-
-Formerly **Dock Folders** (`dock-folders@psouranis.github.io`): its settings and
-pictures move to Dockrr's folders the first time it starts (see
-[Coming from Dock Folders](#coming-from-dock-folders)).
+<p align="center">
+  Folders, the song playing now, and icons that stay yours,
+  for <a href="https://github.com/micheleg/dash-to-dock">Dash to Dock</a> on GNOME 48.
+</p>
 
 <table>
   <tr>
@@ -29,127 +18,145 @@ pictures move to Dockrr's folders the first time it starts (see
   </tr>
 </table>
 
-- **A folder in the dock**: a rounded square showing its first four apps.
-  Click it and its apps open in a pop-up grid, each with its name; click one
-  to open it, or bring its window forward. Right-click one for its own app
-  menu, as on the dock (its windows, New Window, its actions, Pin to Dock,
-  App Details, Quit), over the pop-up: Esc or a click elsewhere goes back
-  to the folder. New Window is left out for apps that only ever have one
-  window (Signal, Discord, Slack, and any app for which it opened nothing).
-- **Dash to Dock's own running indicators**: on the folder while one of its
-  apps is open, and on each open app in the pop-up, in whatever style Dash
-  to Dock is set to (dots, dashes, segments...), changing with it.
-- **Unread badges**: red counts at the icon's top right, as on the dock's
-  other icons: on each app in the pop-up, and their total on the folder.
-  They're Dash to Dock's own counts: the app's launcher count (Signal,
-  Slack, Discord and others set one) plus its GNOME notifications, except
-  that an app that sets its own count is counted by it alone. A leftover
-  notification (one an app posted before an update restarted it) can't
-  leave a stuck "1".
-- **Fewer dock icons**: an app in a dock folder gets no dock icon of its own
-  while it runs. The folder stands for it.
-- **Drop apps in, drag them out**: drag an app icon from the dock (or Show
-  Apps) onto the folder; it lights up, and on release the app goes in:
-  added to the app folder (and out of any other), unpinned from the dock.
-  Drag an app out of the pop-up and let go anywhere but the folder: it
-  leaves the folder (and isn't pinned), so it's back to a plain app.
-- **Make folders from the dock**: right-click an app in the dock → **Add to
-  Folder** → one of the dock's folders, or **New Folder…**: name it, and a
-  folder with that app takes the app's place in the dock.
-- **Your own app icons**: right-click an app (in the dock or a folder's
-  pop-up) → **Change Icon…**, and pick a picture (PNG, SVG, JPEG...). It
-  becomes the app's icon everywhere: dock, folders, Show Apps, Alt+Tab.
-  **Reset Icon** takes it back. It's a copy of the app's `.desktop` file in
-  `~/.local/share/applications`, made again from the app's own file whenever
-  apps change (so an update's other changes come through, with your icon)
-  and removed if the app is uninstalled. Contents are compared, not dates:
-  dpkg keeps a package's own file dates, so an updated launcher can look
-  older than the copy.
-- **The song playing now**, in a card of its own at the dock's end (in a
-  dock spanning the screen, its far end; never among the apps and folders):
-  the album cover, the title and artist, and **previous / play-pause /
-  next**. The card is tinted with the cover's main colour, changing with
-  each song, and a hairline along its bottom fills as the song plays. A long
-  title scrolls slowly back and forth, and a new song fades in. Click the cover to bring the
-  player to the front, again to minimize it (as the dock's own icons do).
-  It's there only while something plays or is paused. Any app with MPRIS
-  works (Supersonic, Spotify, a browser playing a video): the same players
-  GNOME's clock menu shows. A cover is shown only from a local file, so the
-  dock never fetches one over the network. In a dock on the left or right,
-  the buttons stack and the text is left out.
-- **Icons and window classes from a file**, for a setup kept in a repo:
-  `~/.config/dockrr/launchers.json`, read live:
+- **Folders in the dock.** GNOME's own app folders become dock icons. Click
+  one, and its apps open in a pop-up grid, with unread badges and running
+  indicators.
+- **The song playing now.** A card at the dock's end shows the cover, title
+  and artist, with previous, play/pause and next buttons. It is tinted by
+  the cover.
+- **Your own app icons.** Pick a picture from an app's right-click menu, or
+  list it in a file. The icon survives app updates and renames.
 
-  ```json
-  {"launchers": [
-    {"ids": ["com.microsoft.VSCode", "code"], "icon": "/home/you/.local/share/icons/code.png"},
-    {"ids": ["org.signal.Signal"], "wmclass": "org.signal.Signal"},
-    {"ids": ["chrome-<app id>-Default"], "icon": "/path/to/web-app.png", "user_only": true}
-  ]}
-  ```
-
-  `ids` lists every name the app's launcher has had, newest first: when an
-  update renames it (VS Code 1.143 went from `code` to
-  `com.microsoft.VSCode`) the new one gets the icon and a dock favourite on
-  the old one moves to it. `wmclass` sets `StartupWMClass`, for an app whose
-  launcher names the wrong window class (the dock then shows a second,
-  generic icon for its windows). `user_only` is for a launcher that exists
-  only in `~/.local/share/applications`, like a Chromium web app's: it's
-  edited in place, and again whenever Chromium rewrites it. A picture picked
-  with Change Icon… wins over the file's, until Reset Icon. Take an app off
-  the list and its copy goes, so its own icon is back.
-- **Move it, rename it**: drag the folder along the dock; a gap opens where
-  it will go, between any two icons (apps or folders), as when you drag an
-  app, and it goes there when you let go (Esc, or letting go off the dock,
-  leaves it where it was). Or right-click it: Rename…, Move Left, Move Right, Remove from
-  Dock, Dockrr Settings.
-- **Any folder**: the settings window (Extensions app, or right-click a dock
-  folder) has a switch per app folder.
-
-Dash to Dock can't hold folders itself, and the extension that pinned
-folders to GNOME's dash supports GNOME 43 only.
-
-## Requirements
-
-Works on:
-
-- **OS**: Debian 13 (trixie)
-- **GNOME Shell**: 48 (tested on 48.7), X11 session
-- **Dash to Dock**: version 100 (Debian's `gnome-shell-extension-dashtodock`)
+Dash to Dock can't hold folders itself. The extension that pinned folders
+to GNOME's dash supports GNOME 43 only.
 
 ## Install
 
+Requirements:
+
+| | Tested on |
+|---|---|
+| OS | Debian 13 (trixie) |
+| GNOME Shell | 48 (48.7), X11 session |
+| Dash to Dock | version 100 (Debian's `gnome-shell-extension-dashtodock`) |
+
 ```sh
 make install
+gnome-extensions enable dockrr@psouranis.github.io
 ```
 
-Then log in again (on X11, Alt+F2, `r`, Enter is enough) and turn it on in
-the Extensions app, or `gnome-extensions enable dockrr@psouranis.github.io`.
+Then log in again. On X11, Alt+F2, `r`, Enter is enough.
 
-## Use
+### Without Dash to Dock
 
-1. Make a folder: right-click an app in the dock → Add to Folder → New
-   Folder…. (Or in Show Apps: drop one app on another.)
-2. Put it in the dock: right-click a dock folder → Dockrr Settings, or
-   the Extensions app → Dockrr → settings, and switch it on.
+Folders, the song card, and the right-click menu items all live inside
+Dash to Dock, so they need it. Without Dash to Dock, only
+[`launchers.json`](#icons-and-window-classes-from-a-file) works: its icons
+and window classes still apply everywhere (Show Apps, Alt+Tab, GNOME's own
+dash).
+
+## Quick start
+
+1. Make a folder: right-click an app in the dock, then **Add to Folder** →
+   **New Folder…**. Or, in Show Apps, drop one app on another.
+2. Put it in the dock: right-click a dock folder → **Dockrr Settings**, or
+   open the Extensions app → Dockrr → settings, and switch it on.
 3. Drag it to where you want it.
 
-A folder's name and apps are always the app folder's own, read live: change
-the folder in Show Apps and the dock follows.
+A folder's name and apps are always the app folder's own, read live. Change
+the folder in Show Apps, and the dock follows.
 
-## Coming from Dock Folders
+## Folders
 
-Dockrr is Dock Folders renamed (2026-11). The first time it starts it moves
-`~/.config/dock-folders` (your folders, `launchers.json`) to
-`~/.config/dockrr`, and `~/.local/share/dock-folders` (pictures from Change
-Icon…) to `~/.local/share/dockrr`, unless those already exist. Launcher
-copies Dock Folders made (`X-DockFolders-*` keys) are taken over as they are.
-Switch the old extension off and remove it:
+- **The icon.** A rounded square shows the folder's first four apps. Click
+  it, and its apps open in a pop-up grid, each with its name. Click an app
+  to open it, or to bring its window forward.
+- **App menus.** Right-click an app in the pop-up for its own menu, as on
+  the dock: its windows, New Window, its actions, Pin to Dock, App Details,
+  Quit. Esc, or a click elsewhere, goes back to the folder. New Window is
+  left out for apps that only ever have one window (Signal, Discord, Slack,
+  and any app for which it opened nothing).
+- **Running indicators.** Dash to Dock's own: on the folder while one of
+  its apps is open, and on each open app in the pop-up. They use whatever
+  style Dash to Dock is set to (dots, dashes, segments...), and change with
+  it.
+- **Unread badges.** Red counts at the icon's top right, as on the dock's
+  other icons: on each app in the pop-up, and their total on the folder.
+  They are Dash to Dock's own counts: the app's launcher count (Signal,
+  Slack, Discord and others set one) plus its GNOME notifications. An app
+  that sets its own count is counted by that alone. A leftover notification,
+  posted before an update restarted the app, can't leave a stuck "1".
+- **Fewer dock icons.** An app in a dock folder gets no dock icon of its
+  own while it runs. The folder stands for it.
+- **Drop apps in, drag them out.** Drag an app icon from the dock (or Show
+  Apps) onto the folder. The folder lights up, and on release the app goes
+  in: it is added to the app folder, taken out of any other, and unpinned
+  from the dock. Drag an app out of the pop-up and let go anywhere but the
+  folder: it leaves the folder, unpinned, as a plain app.
+- **Make folders from the dock.** Right-click an app in the dock → **Add to
+  Folder** → one of the dock's folders, or **New Folder…**. Name it, and a
+  folder with that app takes the app's place in the dock.
+- **Move it.** Drag the folder along the dock. A gap opens where it will go,
+  between any two icons, and it goes there when you let go. Esc, or letting
+  go off the dock, leaves it where it was.
+- **Folder menu.** Right-click a folder: Rename…, Move Left, Move Right,
+  Remove from Dock, Dockrr Settings.
+- **Any folder.** The settings window (the Extensions app, or right-click a
+  dock folder) has a switch per app folder.
 
-```sh
-gnome-extensions disable dock-folders@psouranis.github.io
-gnome-extensions uninstall dock-folders@psouranis.github.io
-make install && gnome-extensions enable dockrr@psouranis.github.io
+## The song playing now
+
+- **Where.** A card of its own at the dock's end, never among the apps and
+  folders. In a dock spanning the screen, it sits at the far end.
+- **What.** The album cover, the title and artist, and **previous /
+  play-pause / next**.
+- **Look.** The card is tinted with the cover's main colour, changing with
+  each song. A hairline along its bottom fills as the song plays. A long
+  title scrolls slowly back and forth, and a new song fades in. The card has
+  one fixed width, so it never shifts along the dock.
+- **Cover click.** Click the cover to bring the player to the front. Click
+  it again to minimize the player, as the dock's own icons do.
+- **When.** Only while something plays or is paused.
+- **Which players.** Any app with MPRIS works (Supersonic, Spotify, a
+  browser playing a video): the same players GNOME's clock menu shows.
+- **Privacy.** A cover is shown only from a local file, so the dock never
+  fetches one over the network.
+- **Side docks.** In a dock on the left or right, the buttons stack and the
+  text is left out.
+
+## Your own app icons
+
+Right-click an app, in the dock or in a folder's pop-up → **Change Icon…**,
+and pick a picture (PNG, SVG, JPEG...). It becomes the app's icon
+everywhere: the dock, folders, Show Apps, Alt+Tab. **Reset Icon** takes it
+back.
+
+How it works: Dockrr writes a copy of the app's `.desktop` file to
+`~/.local/share/applications`. It makes the copy again from the app's own
+file whenever apps change, so an update's other changes still come
+through, with your icon. The copy is removed if the app is uninstalled.
+Contents are compared, not dates: dpkg keeps a package's own file dates,
+so an updated launcher can look older than the copy.
+
+### Icons and window classes from a file
+
+For a setup kept in a repo, list them in `~/.config/dockrr/launchers.json`.
+Dockrr reads it live:
+
+```json
+{"launchers": [
+  {"ids": ["com.microsoft.VSCode", "code"], "icon": "/home/you/.local/share/icons/code.png"},
+  {"ids": ["org.signal.Signal"], "wmclass": "org.signal.Signal"},
+  {"ids": ["chrome-<app id>-Default"], "icon": "/path/to/web-app.png", "user_only": true}
+]}
 ```
 
-Then log in again (on X11, Alt+F2 then `r`).
+| Key | What it does |
+|---|---|
+| `ids` | Every name the app's launcher has had, newest first. When an update renames it (VS Code 1.143 went from `code` to `com.microsoft.VSCode`), the new one gets the icon, and a dock favourite on the old one moves to it. |
+| `icon` | The picture to use. |
+| `wmclass` | Sets `StartupWMClass`, for an app whose launcher names the wrong window class. Without it, the dock shows a second, generic icon for its windows. |
+| `user_only` | For a launcher that exists only in `~/.local/share/applications`, like a Chromium web app's. It is edited in place, and again whenever Chromium rewrites it. |
+
+A picture picked with Change Icon… wins over the file's, until Reset Icon.
+Take an app off the list, and its copy goes, so its own icon is back.

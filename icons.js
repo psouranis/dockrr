@@ -43,22 +43,11 @@ const OURS = 'X-Dockrr-Override';          // true: the file is our copy
 const SOURCE = 'X-Dockrr-Source';          // the .desktop file it copies
 const CHOSEN = 'X-Dockrr-Icon';            // the picture chosen in the menu
 const ORIGINAL = 'X-Dockrr-OriginalIcon';  // a user file's own Icon=, edited in place
-// Dockrr was Dock Folders until 2026-11: its keys are read as these.
-const RENAMED = {
-    'X-DockFolders-Override': OURS,
-    'X-DockFolders-Source': SOURCE,
-    'X-DockFolders-Icon': CHOSEN,
-    'X-DockFolders-OriginalIcon': ORIGINAL,
-};
-// The earlier launcher-overrides script's mark: its copies are taken over.
-const LEGACY = 'X-Launcher-Override-Source';
 
 // Overridable by the tests.
 export const paths = {
     userApps: () => GLib.build_filenamev([GLib.get_user_data_dir(), 'applications']),
     iconDir: () => GLib.build_filenamev([GLib.get_user_data_dir(), 'dockrr', 'icons']),
-    // Where pictures were kept as Dock Folders (moved by config.js, moveOldData).
-    oldIconDir: () => GLib.build_filenamev([GLib.get_user_data_dir(), 'dock-folders', 'icons']),
     launchers: () => GLib.build_filenamev([GLib.get_user_config_dir(), 'dockrr', 'launchers.json']),
     systemApps: () => [
         GLib.build_filenamev([GLib.get_user_data_dir(), 'flatpak', 'exports', 'share']),
@@ -75,35 +64,7 @@ function load(path) {
     const keyfile = new GLib.KeyFile();
     keyfile.load_from_file(path,
         GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS);
-    renameOld(keyfile);
     return keyfile;
-}
-
-// A copy made as Dock Folders: its keys under their new names, and a picture
-// path into the old folder pointed at the new one (the next save keeps it).
-function renameOld(keyfile) {
-    const keys = (() => {
-        try {
-            return keyfile.get_keys(GROUP)[0];
-        } catch {
-            return [];
-        }
-    })();
-    for (const [old, now] of Object.entries(RENAMED)) {
-        if (!keys.includes(old))
-            continue;
-        if (!keys.includes(now))
-            keyfile.set_string(GROUP, now, keyfile.get_string(GROUP, old));
-        keyfile.remove_key(GROUP, old);
-    }
-    const oldDir = `${paths.oldIconDir()}/`;
-    for (const group of keyfile.get_groups()[0]) {
-        for (const key of ['Icon', CHOSEN, ORIGINAL]) {
-            const value = get(keyfile, key, group);
-            if (value.startsWith(oldDir))
-                keyfile.set_string(group, key, `${paths.iconDir()}/${value.slice(oldDir.length)}`);
-        }
-    }
 }
 
 function get(keyfile, key, group = GROUP) {
@@ -212,7 +173,6 @@ function writeCopy(id, source, {icon, wmclass, chosen}) {
 // is remembered, to be put back when nothing overrides it any more.
 function writeInPlace(path, icon) {
     const keyfile = load(path);
-    drop(keyfile, LEGACY);
     if (icon) {
         if (!has(keyfile, ORIGINAL))
             keyfile.set_string(GROUP, ORIGINAL, get(keyfile, 'Icon'));
@@ -224,13 +184,9 @@ function writeInPlace(path, icon) {
     return save(keyfile, path);
 }
 
-// A copy made by this file (or by launcher-overrides before it), and the
-// file it copies.
+// A copy made by this file: the file it copies.
 function copySource(keyfile) {
-    if (has(keyfile, OURS))
-        return get(keyfile, SOURCE);
-    const legacy = get(keyfile, LEGACY);
-    return legacy && legacy !== 'self' ? legacy : '';
+    return has(keyfile, OURS) ? get(keyfile, SOURCE) : '';
 }
 
 // The picture chosen in the menu for a launcher file, if any. (A copy made
@@ -320,7 +276,7 @@ export function reconcile() {
                     changed = true;
                     console.log(`Dockrr: ${name} removed (${exists(source) ? 'nothing overrides it' : 'its app is gone'})`);
                 }
-            } else if (has(keyfile, ORIGINAL) || has(keyfile, LEGACY)) {
+            } else if (has(keyfile, ORIGINAL)) {
                 changed = writeInPlace(path, chosen) || changed;
             }
         } catch (e) {
