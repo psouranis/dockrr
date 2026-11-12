@@ -25,8 +25,8 @@ move the folder along the dock.
 A card at the dock's end shows the song's cover, title and artist, with
 previous, play/pause and next buttons. It takes its tint from the cover and
 shows a progress line. Click the cover to show the player, and click it
-again to hide it. It works with any MPRIS player (Supersonic, Spotify, a
-browser).
+again to hide it. It works with any MPRIS music player (Supersonic,
+Spotify, ...). Videos playing in a web browser are left out.
 
 <p align="center"><img src="screenshots/now-playing.png" alt="The song card at the right end of the dock: album cover, title, artist, and previous, play and next buttons" width="620"></p>
 

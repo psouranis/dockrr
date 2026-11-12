@@ -34,6 +34,16 @@ export function matchApp(name, apps, nameOf) {
     return apps.find(app => nameOf(app)?.trim().toLowerCase() === want) ?? null;
 }
 
+// A web browser playing a video (YouTube and the like): not shown. Known by
+// its launcher's WebBrowser category, or, without a launcher, its MPRIS bus
+// name (org.mpris.MediaPlayer2.firefox.instance_1_23, ...chromium...).
+const BROWSERS = /firefox|waterfox|librewolf|chrom|brave|vivaldi|opera|edge|epiphany|zen/i;
+export function isBrowser(busName, categories) {
+    if (categories)
+        return categories.split(';').includes('WebBrowser');
+    return BROWSERS.test(busName?.replace('org.mpris.MediaPlayer2.', '') ?? '');
+}
+
 // How far through the track, 0 to 1; null when the player doesn't say.
 // MPRIS gives both in microseconds.
 export function progressFraction(position, length) {

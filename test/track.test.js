@@ -3,7 +3,7 @@
 import System from 'system';
 
 import {
-    coverUri, describe, dominantColour, matchApp, pickPlayer, progressFraction, tint,
+    coverUri, describe, dominantColour, isBrowser, matchApp, pickPlayer, progressFraction, tint,
 } from '../track.js';
 
 let failed = 0;
@@ -58,6 +58,10 @@ check('transparent pixels are left out',
 check('a grey cover: its average grey',
     dominantColour([100, 100, 100, 200, 200, 200], 2, 1, 3, 6), [150, 150, 150]);
 check('nothing visible: none', dominantColour([0, 0, 0, 0], 1, 1, 4, 4), null);
+check('a browser, by its launcher', isBrowser('org.mpris.MediaPlayer2.x', 'Network;WebBrowser;'), true);
+check('a music app, by its launcher', isBrowser('org.mpris.MediaPlayer2.firefox', 'Audio;Player;'), false);
+check('a browser, by its bus name', isBrowser('org.mpris.MediaPlayer2.firefox.instance_1_23', null), true);
+check('a music app, by its bus name', isBrowser('org.mpris.MediaPlayer2.Supersonic', null), false);
 check('the tint', tint([100, 50, 0]), {
     background: 'rgba(100, 50, 0, 0.22)',
     accent: 'rgb(170, 142, 115)',

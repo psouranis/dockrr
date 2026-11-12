@@ -32,7 +32,7 @@ import {MprisSource} from 'resource:///org/gnome/shell/ui/mpris.js';
 import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {
-    coverUri, describe, dominantColour, matchApp, pickPlayer, progressFraction, tint,
+    coverUri, describe, isBrowser, dominantColour, matchApp, pickPlayer, progressFraction, tint,
 } from './track.js';
 
 // The text column's width: fixed, so the card is the same size for every
@@ -154,14 +154,14 @@ class Tile {
         });
         this._row.add_child(this._cover);
 
-        // Title (scrolls when long) over artist (cut with "…"): only in a dock
-        // along the top or bottom; a side dock is too narrow.
+        // Title (scrolls when long) over artist (cut with "…"). In a side
+        // dock the two lines are turned to run up the dock, like a book's
+        // spine (_turnText).
         this._text = new St.BoxLayout({
             style_class: 'dockrr-now-playing-text',
             vertical: true,
             y_align: Clutter.ActorAlign.CENTER,
             x_expand: true,
-            visible: this._horizontal,
         });
         this._titleClip = new St.Widget({
             layout_manager: new Clutter.FixedLayout(),
@@ -175,7 +175,20 @@ class Tile {
         this._artist.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         this._text.add_child(this._titleClip);
         this._text.add_child(this._artist);
-        this._row.add_child(this._text);
+        if (this._horizontal) {
+            this._row.add_child(this._text);
+        } else {
+            // Layout ignores rotation, so the turned text sits in a box of
+            // the turned size.
+            this._spine = new St.Widget({
+                layout_manager: new Clutter.FixedLayout(),
+                x_align: Clutter.ActorAlign.CENTER,
+            });
+            this._spine.add_child(this._text);
+            this._text.rotation_angle_z = -90;   // reads bottom to top
+            this._text.connect('notify::size', () => this._turnText());
+            this._row.add_child(this._spine);
+        }
 
         const buttons = new St.BoxLayout({
             style_class: 'dockrr-now-playing-buttons',
@@ -346,6 +359,15 @@ class Tile {
         go(-overflow);
     }
 
+    // Turned -90° about its top-left corner, the text box would sit above
+    // its spot; moved down by its own width, it fills the spine box.
+    _turnText() {
+        const [width, height] = this._text.get_size();
+        this._text.translation_y = width;
+        if (this._spine.width !== height || this._spine.height !== width)
+            this._spine.set_size(height, width);
+    }
+
     _stopScroll() {
         quietly(() => this._title.remove_transition('translation-x'));
         quietly(() => (this._title.translation_x = 0));
@@ -373,7 +395,9 @@ export class NowPlaying {
     }
 
     get player() {
-        return pickPlayer([...this._changed].map(([player, changed]) => ({
+        const shown = [...this._changed].filter(([player]) => !isBrowser(player._busName,
+            playerApp(player)?.get_app_info()?.get_categories() ?? null));
+        return pickPlayer(shown.map(([player, changed]) => ({
             player, changed, status: player.status, title: player.trackTitle,
         })))?.player ?? null;
     }
